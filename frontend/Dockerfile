@@ -1,11 +1,23 @@
+# ---- Build React app ----
+FROM node:18 AS build
+WORKDIR /app
+COPY . .
+RUN npm install
+RUN npm run build
+
+# ---- Run with nginx ----
 FROM nginx:alpine
 
+# Copy built React files
 COPY --from=build /app/build /usr/share/nginx/html
+
+# Copy nginx configs
 COPY nginx.conf /nginx.conf
 COPY nginx.railway.conf /nginx.railway.conf
 
 ARG ENVIRONMENT=railway
 
+# Use Railway nginx template when on Railway
 RUN if [ "$ENVIRONMENT" = "railway" ]; then \
         cp /nginx.railway.conf /etc/nginx/templates/default.conf.template ; \
     else \
