@@ -1,0 +1,37 @@
+- name: Start Full MERN Application Stack
+  hosts: webserver
+  become: true
+
+  vars:
+    monitoring_dir: "{{ playbook_dir }}"
+
+  tasks:
+    - name: Start MongoDB
+      systemd:
+        name: mongod
+        state: started
+        enabled: yes
+
+    - name: Start backend application
+      systemd:
+        name: restaurant-app
+        state: started
+        enabled: yes
+
+    - name: Start Nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Start Prometheus and Grafana containers
+      command: docker-compose up -d --no-recreate
+      args:
+        chdir: "{{ monitoring_dir }}"
+

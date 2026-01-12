@@ -30,7 +30,7 @@ const Header = () => {
           <div className="flex max-w-4xl mx-auto ">
             <img src={logo} className="rounded-full h-20 " />
             <h2 className=" font-bold text-2xl dark:text-red-700  p-4  md: hidden md:flex  ">
-              Aana Zoor
+              Aana Zaroor
             </h2>
           </div>
         </Link>
@@ -38,7 +38,8 @@ const Header = () => {
         <div className="flex items-center gap-4 md:gap-7">
           <nav className="gap-4 md:gap-6 text-base md:text-lg hidden md:flex">
             <Link to={""}>Home</Link>
-            <Link to={"menu/646b5548acd0a88a674b9429"}>Menu</Link>
+            {/* <Link to={"menu"}>Menu</Link> */}
+
             <Link to={"about"}>About</Link>
             <Link to={"contact"}>Contact</Link>
           </nav>

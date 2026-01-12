@@ -42,7 +42,7 @@ const CardFeature = ({ image, name, price, category, loading, id }) => {
             className="bg-yellow-500 py-1 mt-2 rounded hover:bg-yellow-600 w-full"
             onClick={handleAddCartProduct}
           >
-            Add Cart
+            Add to Cart
           </button>
         </>
       ) : (

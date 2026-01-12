@@ -46,11 +46,11 @@ app.post("/signup", async (req, res) => {
     // console.log(result);
     console.log(err);
     if (result) {
-      res.send({ message: "Email id is already register", alert: false });
+      res.send({ message: "Email id is already registered", alert: false });
     } else {
       const data = userModel(req.body);
       const save = data.save();
-      res.send({ message: "Successfully sign up", alert: true });
+      res.send({ message: "Sign up is successful", alert: true });
     }
   });
 });
@@ -69,13 +69,13 @@ app.post("/login", (req, res) => {
       };
       //   console.log(dataSend);
       res.send({
-        message: "Login is successfully",
+        message: "Login is successful",
         alert: true,
         data: dataSend,
       });
     } else {
       res.send({
-        message: "Email is not available, please sign up",
+        message: "Account not available, please sign up",
         alert: false,
       });
     }

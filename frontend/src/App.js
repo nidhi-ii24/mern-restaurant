@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setDataProduct } from "./redux/productSlide";
 import Footer from "./component/Footer";
+import MenuList from "./page/MenuList";
+import Menu from "./page/Menu";
 
 function App() {
   const dispatch = useDispatch();

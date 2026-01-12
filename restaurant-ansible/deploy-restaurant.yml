@@ -1,0 +1,139 @@
+- name: Deploy MERN Restaurant Backend with Nginx
+  hosts: webserver
+  become: true
+
+  vars:
+    app_name: restaurant-app
+    app_user: nodeapp
+    app_dir: /var/www/restaurant-backend
+    node_port: 8080
+
+  handlers:
+    - name: restart app
+      systemd:
+        name: "{{ app_name }}"
+        state: restarted
+        daemon_reload: yes
+
+    - name: reload nginx
+      systemd:
+        name: nginx
+        state: reloaded
+
+  tasks:
+    # -----------------------------
+    # Install Node.js
+    # -----------------------------
+    - name: Add NodeSource Node.js 18 repo
+      shell: curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+      args:
+        executable: /bin/bash
+
+    - name: Install Node.js and npm
+      apt:
+        name:
+          - nodejs
+          - npm
+        state: present
+        update_cache: yes
+
+    # -----------------------------
+    # Create application user
+    # -----------------------------
+    - name: Create app user
+      user:
+        name: "{{ app_user }}"
+        shell: /bin/bash
+        create_home: yes
+
+    # -----------------------------
+    # Create app directory
+    # -----------------------------
+    - name: Create app directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+
+    # -----------------------------
+    # Copy backend code
+    # -----------------------------
+    - name: Copy backend source code
+      copy:
+        src: ../backend/
+        dest: "{{ app_dir }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+
+    # -----------------------------
+    # Install npm dependencies
+    # -----------------------------
+    - name: Install backend dependencies
+      npm:
+        path: "{{ app_dir }}"
+        production: yes
+
+    # -----------------------------
+    # Create systemd service
+    # -----------------------------
+    - name: Create systemd service for backend
+      copy:
+        dest: /etc/systemd/system/{{ app_name }}.service
+        content: |
+          [Unit]
+          Description=MERN Restaurant Backend
+          After=network.target mongod.service
+
+          [Service]
+          Type=simple
+          User={{ app_user }}
+          WorkingDirectory={{ app_dir }}
+          ExecStart=/usr/bin/node index.js
+          Restart=always
+          Environment=PORT={{ node_port }}
+          Environment=MONGODB_URL=mongodb://localhost:27017/restaurant
+
+          [Install]
+          WantedBy=multi-user.target
+      notify: restart app
+
+    # -----------------------------
+    # Enable & start backend
+    # -----------------------------
+    - name: Enable and start backend service
+      systemd:
+        name: "{{ app_name }}"
+        enabled: yes
+        state: started
+
+    # -----------------------------
+    # Configure Nginx reverse proxy
+    # -----------------------------
+    - name: Configure Nginx site
+      copy:
+        dest: /etc/nginx/sites-available/{{ app_name }}
+        content: |
+          server {
+            listen 80;
+            server_name localhost;
+
+            location / {
+              proxy_pass http://localhost:{{ node_port }};
+              proxy_http_version 1.1;
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection 'upgrade';
+              proxy_set_header Host $host;
+              proxy_cache_bypass $http_upgrade;
+            }
+          }
+      notify: reload nginx
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/{{ app_name }}
+        dest: /etc/nginx/sites-enabled/{{ app_name }}
+        state: link
+        force: yes
+      notify: reload nginx
+
