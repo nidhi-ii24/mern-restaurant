@@ -1,15 +1,18 @@
 # ---- Build React app ----
 FROM node:18 AS build
 WORKDIR /app
-COPY . .
+COPY package.json package-lock.json ./
 RUN npm install
+COPY . .
 RUN npm run build
+
 
 # ---- Run with nginx ----
 FROM nginx:alpine
 
-# Copy built React files
 COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.railway.conf /etc/nginx/templates/default.conf.template
+
 
 # Copy nginx configs
 COPY nginx.conf /nginx.conf
