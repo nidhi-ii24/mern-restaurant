@@ -6,15 +6,16 @@ RUN npm run build
 
 FROM nginx:alpine
 
-# Copy built React app
+# Copy built React
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy both nginx configs into container
+# Copy nginx configs
 COPY nginx.conf /nginx.conf
 COPY nginx.railway.conf /nginx.railway.conf
+COPY nginx.env /etc/nginx/environment
 
-# Choose config based on environment
 ARG ENVIRONMENT=railway
+
 RUN if [ "$ENVIRONMENT" = "railway" ]; then \
         cp /nginx.railway.conf /etc/nginx/conf.d/default.conf ; \
     else \
